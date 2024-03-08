@@ -1,110 +1,46 @@
-name: WildFly JRE build
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - ".mvn/**"
-      - "docs/**"
-      - ".github/workflows/build-manual.yml"
-      - ".github/workflows/shared-wildfly-build.yml"
-      - '.gitattributes'
-      - '.gitignore'
-      - '.gitleaks.toml'
-      - 'build.bat'
-      - 'build.sh'
-      - "CODE_OF_CONDUCT.md"
-      - "CONTRIBUTING.md"
-      - "integration-tests.bat"
-      - "integration-tests.sh"
-      - "LICENSE.txt"
-      - "mvnw"
-      - "mvnw.cmd"
-      - "README.md"
-      - "SECURITY.md"
-      - "**/README.md"
-      - "**/README.adoc"
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - '**'
-    paths-ignore:
-      - ".mvn/**"
-      - "docs/**"
-      - ".github/workflows/build-manual.yml"
-      - ".github/workflows/shared-wildfly-build.yml"
-      - '.gitattributes'
-      - '.gitignore'
-      - '.gitleaks.toml'
-      - 'build.bat'
-      - 'build.sh'
-      - "CODE_OF_CONDUCT.md"
-      - "CONTRIBUTING.md"
-      - "integration-tests.bat"
-      - "integration-tests.sh"
-      - "LICENSE.txt"
-      - "mvnw"
-      - "mvnw.cmd"
-      - "README.md"
-      - "SECURITY.md"
-      - "**/README.md"
-      - "**/README.adoc"
-
-# Only run the latest job
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
+    branches: [ "master" ]
 
 jobs:
-  wildfly-jre-build:
+  build:
+
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        java: ['11', '17', '21']
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        cache: maven
+   # - name: Build with Maven
+    #  run: mvn -B package --file pom.xml
 
-      - name: Setup JRE ${{ matrix.java }} for building
-        id: setup-java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
-          cache: 'maven'
-          java-package: 'jre'
 
-      - name: Set the JRE Home
-        id: jre-home
-        run: |
-          echo "JRE_HOME=$JAVA_HOME" >> "$GITHUB_OUTPUT"
+    - name: Maven Clean Install
+      run: mvn clean install -DskipTests -pl galleon-pack -am
 
-      - name: Setup JDK ${{ matrix.java }} for building
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
+    - name: Run Maven Tests
+      run:  mvn -pl galleon-pack test -Dtest="layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage"
+      
+      
+    - name: Run Test with Nondex
+      run:  mvn -pl  galleon-pack test edu.illinois:nondex-maven-plugin:2.1.1:nondex -Dtest=="layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage"
 
-      - name: Build and verify WildFly with JRE ${{ matrix.java }}
-        run: |
-          mvn -B clean install -DskipTests -Denforcer.skip=true -Dcheckstyle.skip=true
-          cd testsuite
-          echo "Running: mvn -B verify -Dcontainer.java.home=${{ steps.jre-home.outputs.JRE_HOME }} -fae"
-          mvn -B verify -Dcontainer.java.home=${{ steps.jre-home.outputs.JRE_HOME }} -fae
-
-      - name: Upload Surefire Reports on Failure
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: surefire-reports-${{ matrix.java }}
-          path: '**/surefire-reports/'
-
-      - name: Upload Server Logs on Failure
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: server-logs-${{ matrix.java }}
-          path: '**/server.log'
+    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
