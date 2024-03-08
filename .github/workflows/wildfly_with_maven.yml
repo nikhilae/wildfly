@@ -6,13 +6,13 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: flaky_with_wildfly
+name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -22,40 +22,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v2
       with:
         java-version: '11'
-        distribution: 'temurin'
+        distribution: 'adopt'
         cache: maven
+   # - name: Build with Maven
+    #  run: mvn -B package --file pom.xml
 
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-    - name: Initialize Git
-      run: git init
-    - name: Go to Home
-      run: cd ~
-        
-    - name: Git Clone
-      run: git clone https://github.com/wildfly/wildfly
-      
-    - name: Change Directory
-      run: cd wildfly
-
-    - name: Fetch Git
-      run: git fetch --all
-        
-    - name: Git Checkout
-      run: git checkout 672290342115624a015eb20b4ed1fd72284d82b9
-        
-    - name: Setup Java
-      uses: actions/setup-java@v3
-      with:
-          distribution: 'adopt'
-          java-version: '11'
-          
-    - name: Install Maven
-      run: sudo apt-get install -y maven
       
     - name: Build Project
       run: mvn clean install -DskipTests -pl galleon-pack -am
