@@ -37,17 +37,6 @@ jobs:
     - name: Run Maven Tests
       run: mvn -pl galleon-pack test -Dtest=layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
       
-    - name: start of commit
-      run: git bisect start  
-      
-    - name: Find Commit
-      run: git rev-parse HEAD
-      
-    - name: Finding good commit
-      run: git bisect good  
-      
-    - name: Finding bad commit
-      run: git bisect bad
       
     - name: Run Nondex Maven Plugin
       run: mvn -pl  galleon-pack test edu.illinois:nondex-maven-plugin:2.1.1:nondex -Dtest==layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
