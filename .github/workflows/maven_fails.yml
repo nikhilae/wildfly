@@ -29,8 +29,7 @@ jobs:
         cache: maven
    # - name: Build with Maven
     #  run: mvn -B package --file pom.xml
-    - name: Find Commit
-      run: git rev-parse HEAD
+   
 
     - name: Maven Clean Install
       run: mvn clean install -DskipTests -pl galleon-pack -am
@@ -41,7 +40,10 @@ jobs:
     - name: Find Commit
       run: git rev-parse HEAD
       
-    - name: Find Commit
+    - name: start of commit
+      run: git bisect start  
+      
+    - name: Finding bad commit
       run: git bisect bad
       
     - name: Run Nondex Maven Plugin
