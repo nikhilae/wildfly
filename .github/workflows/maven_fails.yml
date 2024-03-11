@@ -36,12 +36,15 @@ jobs:
 
     - name: Run Maven Tests
       run: mvn -pl galleon-pack test -Dtest=layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
-
-    - name: Find Commit
-      run: git rev-parse HEAD
       
     - name: start of commit
       run: git bisect start  
+      
+    - name: Find Commit
+      run: git rev-parse HEAD
+      
+    - name: Finding good commit
+      run: git bisect good  
       
     - name: Finding bad commit
       run: git bisect bad
