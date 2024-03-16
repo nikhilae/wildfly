@@ -37,7 +37,7 @@ jobs:
     - name: Git Clone
       run: git clone https://github.com/wildfly/wildfly
       
-    - name: Change Directory
+    - name: Go to the Directory
       run: cd wildfly
 
     - name: Fetch Git
@@ -58,7 +58,7 @@ jobs:
     - name: Build Project
       run: mvn clean install -DskipTests -pl galleon-pack -am
       
-    - name: Run Specific Test
+    - name: Run Test
       run: mvn -pl galleon-pack test -Dtest=layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
       
       
