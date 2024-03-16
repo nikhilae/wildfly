@@ -34,11 +34,11 @@ jobs:
     - name: Maven Clean Install
       run: mvn clean install -DskipTests -pl galleon-pack -am
 
-    - name: Run Maven Tests
+    - name: Run Tests
       run: mvn -pl galleon-pack test -Dtest=layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
       
       
-    - name: Run Nondex Maven Plugin
+    - name: Run Tests with Nondex 
       run: mvn -pl  galleon-pack test edu.illinois:nondex-maven-plugin:2.1.1:nondex -Dtest==layer-metadatatests,org.wildfly.feature.pack.layer.tests.opentelemetry.OpenTelemetryLayerMetaDataTestCase#testClassInSdkLogsDataPackage
    
      
